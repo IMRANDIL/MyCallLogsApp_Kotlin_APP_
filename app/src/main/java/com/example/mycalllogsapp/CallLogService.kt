@@ -1,5 +1,6 @@
 package com.example.mycalllogsapp
 
+import java.text.SimpleDateFormat
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -76,12 +77,23 @@ class CallLogService : Service() {
         val callLogs = JSONArray()
         val cursor = contentResolver.query(CallLog.Calls.CONTENT_URI, null, null, null, null)
 
+        // Create a SimpleDateFormat instance for formatting the date
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
         cursor?.use {
             while (it.moveToNext()) {
                 val call = JSONObject().apply {
                     put("number", it.getString(it.getColumnIndex(CallLog.Calls.NUMBER)))
                     put("duration", it.getString(it.getColumnIndex(CallLog.Calls.DURATION)))
-                    put("date", it.getString(it.getColumnIndex(CallLog.Calls.DATE)))
+
+                    // Get the date as milliseconds
+                    val dateInMillis = it.getLong(it.getColumnIndex(CallLog.Calls.DATE))
+
+                    // Convert milliseconds to human-readable date
+                    val date = Date(dateInMillis)
+                    val formattedDate = dateFormat.format(date)
+
+                    put("date", formattedDate)
                 }
                 callLogs.put(call)
             }
